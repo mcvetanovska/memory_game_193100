@@ -19,6 +19,7 @@ export default {
   methods: {
     startGame() {
       this.$emit('startGame', parseInt(this.selectedDifficulty));
+      this.$emit('difficultyChange'); // Emit the event when difficulty changes
     },
   },
 };

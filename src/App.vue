@@ -1,14 +1,46 @@
 <template>
-  <div id="app"><h1>Memory Game</h1>
+  <div id="app">
+    <h1>Memory Game</h1>
     <DifficultySelector @startGame="startGame"/>
-    <div v-if="!isGameOver"><p>Playing Time: {{ playingTimeInSeconds }} seconds</p></div>
-    <MemoryGame :gridSize="gridSize" :cards="cards" @GameOver="handleGameOver" @cardClick="startTime"/>
+    <TimeCounter :startTime="startTime" :isGameStarted="isGameStarted"/>
+    <ProgressBar
+        :totalPairs="totalPairs"
+        :matchedPairs="matchedPairs"
+        :progress="progress"
+    />
+    <div class="move-counter">
+      <p>Moves: {{ moveCount }}</p>
+    </div>
+    <div >
+      <p>Total: {{ totalPairs }}</p>
+      <p>Matched: {{ matchedPairs }}</p>
+    </div>
     <button @click="restartGame">Restart</button>
+    <MemoryGame
+        :gridSize="gridSize"
+        :cards="cards"
+        :isGameStarted="isGameStarted"
+        :startTime="startTime"
+        @GameOver="handleGameOver"
+        @cardClick="startTimer"
+        @incrementMoveCount="incrementMoveCount"
+        @pairMatched="incrementMatchedPairs"
+    />
+    <CongratulationsWindow
+        :showModal="isGameWon"
+        :moveCount="moveCount"
+        :playingTime="playingTime"
+        @restartGame="restartGame"
+    />
   </div>
 </template>
+
 <script>
 import DifficultySelector from './components/DifficultySelector.vue';
 import MemoryGame from './components/MemoryGame.vue';
+import TimeCounter from "./components/TimeCounter.vue";
+import ProgressBar from "./components/ProgressBar.vue";
+import CongratulationsWindow from "./components/CongratulationsWindow.vue";
 
 export default {
   data() {
@@ -18,30 +50,40 @@ export default {
       isGameOver: false,
       startTime: null,
       endTime: null,
-      isGameStarted: false, // Add a flag to track whether the game has started
-      playingTime: 0, // Initialize playingTime
+      isGameStarted: false,
+      moveCount: 0,
       timer: null,
+      playingTime: 0,
+      totalPairs: 0, // Initialize totalPairs
+      matchedPairs: 0, // Initialize matchedPairs
+      isGameWon: false, // Add a data property to track game win
+      progress: 0,
     };
-  },
-  computed: {
-    playingTimeInSeconds() {
-      // Calculate playing time in seconds
-      if (!this.startTime) return 0;
-      const endTime = this.isGameOver ? this.endTime : new Date();
-      return Math.floor((endTime - this.startTime) / 1000);
-    },
   },
   methods: {
     startGame(gridSize) {
       this.gridSize = gridSize;
       this.cards = this.generateCards(this.gridSize);
       this.isGameOver = false;
-      this.startTime = null; // Record the start time
+      this.startTime = new Date();
       this.endTime = null;
       this.isGameStarted = true;
-      this.playingTime = 0;
-      this.timer = setInterval(this.updatePlayingTime, 1000); // Start a timer to update playing time every second
+      this.timer = setInterval(this.updatePlayingTime, 1000);
+      this.moveCount = 0;
+      this.totalPairs = this.gridSize * this.gridSize / 2;
+      this.isGameWon= false;
     },
+    startTimer() {
+      if (!this.isGameStarted) {
+        this.startGame(this.gridSize);
+        this.isGameStarted = true; // Indicate that the game has started
+        this.startTime = new Date();
+      }
+    },
+    // stopTimer() {
+    //   clearInterval(this.timer);
+    //   this.timer = null;
+    // },
     handleCardClick() {
       // Handle card clicking logic, including starting the timer
       if (!this.isGameStarted) {
@@ -54,20 +96,30 @@ export default {
         this.handleGameOver();
       }
     },
+    incrementMoveCount() {
+      this.moveCount += 1; // Increment moveCount in the parent component
+    },
+    incrementMatchedPairs() {
+      this.matchedPairs += 1;
+      this.updateProgress(); // Call the method to update the progress
+    },
+    updateProgress() { // Implement this method to calculate progress
+      if (this.totalPairs === 0) {
+        this.progress = 0;
+      } else {
+        this.progress = (this.matchedPairs / this.totalPairs) * 100;
+      }
+    },
+    areAllCardsMatched() {
+      // Check if all cards have been matched
+      return this.cards.every((card) => card.matched);
+    },
     updatePlayingTime() {
       if (this.startTime && !this.isGameOver) {
         const currentTime = new Date();
         this.playingTime = Math.floor((currentTime - this.startTime) / 1000);
-      }
-    },
-    areAllCardsMatched() {
-      // Implement your logic to check if all cards are matched
-      return this.cards.every((card) => card.matched);
-    },
-    startTime() {
-      if (!this.isGameStarted) {
-        this.startGame(this.gridSize);
-        this.startTime = new Date();
+      } else {
+        this.playingTime = 0; // Set to 00:00 when not playing
       }
     },
     generateCards(gridSize) {
@@ -92,22 +144,34 @@ export default {
 
       return cards;
     },
-
     handleGameOver() {
-      this.endTime = new Date(); // Record the end time
-      this.isGameOver = true;
+      // Check if all cards are matched
+      if (this.areAllCardsMatched()) {
+        this.endTime = new Date(); // Record the end time
+        this.isGameOver = true;
+        console.log('handleGameOver is called'); // Add this line
+        this.isGameWon = true; // Set isGameWon to true
+      }
     },
     restartGame() {
       this.cards = [];
-      this.startGame(this.gridSize);
+      this.isGameStarted = false; // Stop the game
+      this.playingTime = 0;
+      this.moveCount = 0;
+      this.startTime = null; // Reset start time
+      this.isGameWon = false; // Reset isGameWon
+      this.startGame(this.gridSize); // Start a new game
     },
   },
   mounted() {
     this.startGame(this.gridSize);
   },
   components: {
+    ProgressBar,
+    TimeCounter,
     DifficultySelector,
     MemoryGame,
+    CongratulationsWindow,
   },
 };
 </script>
@@ -134,11 +198,13 @@ h1 {
 
 button {
   padding: 10px 20px;
-  background-color: #4CAF50;
+  background-color: #007BFF;
   color: white;
   border: none;
   cursor: pointer;
-  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 5px;
 }
 
 button:hover {

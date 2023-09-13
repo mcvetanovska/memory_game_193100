@@ -1,21 +1,24 @@
 <template>
+
   <div class="grid" :style="gridStyle">
     <div
         v-for="card in cards"
         :key="card.id"
         @click="handleCardClick(card)"
-    :class="{ 'card': true, 'flipped': card.flipped, 'matched': card.matched }"
-    >
-    <span v-if="!card.matched">{{ card.emoji }}</span>
-  </div>
+        :class="{ 'card': true, 'flipped': card.flipped, 'matched': card.matched }">
+      <span v-if="card.flipped || card.matched">{{ card.emoji }}</span>
+    </div>
   </div>
 </template>
 
 <script>
+
 export default {
   props: {
     gridSize: Number,
     cards: Array,
+    isGameStarted: Boolean, // Receive isGameStarted as a prop
+    startTime: Date, // Receive startTime as a prop
   },
   computed: {
     gridStyle() {
@@ -33,24 +36,31 @@ export default {
   data() {
     return {
       flippedCards: [],
-    };
+      timerStartStatus: 'stop',
+      processingClick: false, // Add a flag to track click processing
+      isGameOver: false,
+      };
   },
   methods: {
     handleCardClick(card) {
-      if (this.flippedCards.length >= 2 || card.flipped || card.matched) return;
+      if (this.processingClick || card.flipped || card.matched) return;
 
       card.flipped = true;
       this.flippedCards.push(card);
 
       if (this.flippedCards.length === 2) {
-        setTimeout(this.checkMatch, 1000);
+        this.processingClick = true; // Lock further clicks until processing is done
+        setTimeout(() => {
+          this.checkMatch();
+          this.processingClick = false; // Unlock clicks after processing
+          this.$emit('incrementMoveCount');
+        }, 1000);
       }
 
-
       if (!this.isGameStarted) {
-        this.startTime = new Date(); // Set the start time
-        this.timer = setInterval(this.updatePlayingTime, 1000); // Start the timer
-        this.$emit('cardClick'); // Emit the cardClick event
+        this.startTime = new Date();
+        this.timerStartStatus = 'start';
+        this.$emit('cardClick');
       }
 
       if (this.areAllCardsMatched()) {
@@ -58,27 +68,42 @@ export default {
         this.handleGameOver();
       }
     },
-    areAllCardsMatched() {
-      // Implement your logic to check if all cards are matched
-      return this.cards.every((card) => card.matched);
-    },
-    updatePlayingTime() {
-      if (this.startTime && !this.isGameOver) {
-        const currentTime = new Date();
-        this.playingTime = Math.floor((currentTime - this.startTime) / 1000); // Update playingTime
-      }
-    },
+
     checkMatch() {
-      if (this.flippedCards[0].emoji === this.flippedCards[1].emoji) {
+      console.log('Checking for a match...');
+      if (
+          this.flippedCards.length === 2 &&
+          this.flippedCards[0].emoji === this.flippedCards[1].emoji
+      ) {
         this.flippedCards[0].matched = true;
         this.flippedCards[1].matched = true;
+        // Emit an event to notify the parent component that a pair is matched
+        this.$emit('pairMatched');
       } else {
-        this.flippedCards[0].flipped = false;
-        this.flippedCards[1].flipped = false;
+        this.flippedCards.forEach((card) => (card.flipped = false));
       }
 
       this.flippedCards = [];
-
+      this.processingClick = false; // Unlock clicks after processing
+    },
+    handleGameOver() {
+      console.log('Checking if all cards are matched...');
+      // Check if all cards are matched
+      if (this.areAllCardsMatched()) {
+        this.endTime = new Date(); // Record the end time
+        this.isGameOver = true;
+        console.log('handleGameOver is called'); // Add this line
+        this.isGameWon = true; // Set isGameWon to true
+      }
+    },
+    areAllCardsMatched() {
+      // Check if all cards have been matched
+      return this.cards.every((card) => card.matched);
+    },
+    restartGame() {
+      this.cards = [];
+      this.timerStartStatus = 'reset'; // Reset timerStarted to false
+      this.startGame(this.gridSize);
     },
   },
 };
@@ -114,4 +139,3 @@ export default {
   background-color: #28A745;
 }
 </style>
-
