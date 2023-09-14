@@ -4,7 +4,7 @@
       <h2>Congratulations!</h2>
       <p>You've won the game!</p>
       <p>Moves: {{ moveCount }}</p>
-      <p>Time: {{ formatTime(playingTime-1) }} seconds</p>
+      <p>Time: {{ formatTime(playingTime) }} seconds</p>
       <button @click="restartGame">Play Again</button>
     </div>
   </div>
@@ -19,6 +19,7 @@ export default {
   },
   methods: {
     restartGame() {
+      console.log('CongratulationsWindow: Emitting restartGame event');
       this.$emit('restartGame'); // Emit the restartGame event to restart the game
     },
     formatTime(seconds) {
@@ -54,9 +55,11 @@ export default {
 
 .modal {
   /* Styles for the modal content */
+  width: 300px;
+  height: 200px;
   background-color: #fff;
-  padding: 20px;
-  border-radius: 5px;
+  padding: 30px 40px;
+  border-radius: 20px;
   text-align: center;
 }
 

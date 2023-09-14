@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div >
     <label for="difficulty">Select Difficulty:</label>
     <select id="difficulty" v-model="selectedDifficulty" @change="startGame">
       <option value="4">Easy</option>
@@ -27,14 +27,14 @@ export default {
 
 <style scoped>
 label {
-  font-size: 18px;
+  font-size: 16px;
   margin-right: 10px;
   color: #333;
 }
 
 select {
-  padding: 10px;
-  font-size: 16px;
+  padding: 5px;
+  border-radius: 5px;
 }
 
 </style>

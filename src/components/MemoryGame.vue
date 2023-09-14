@@ -6,8 +6,8 @@
         :key="card.id"
         @click="handleCardClick(card)"
         :class="{ 'card': true, 'flipped': card.flipped, 'matched': card.matched }">
-      <div class="card-inner">
-        <div class="card-front"></div>
+      <div class="card-container">
+        <div class="card-front"><div class="question-mark">?</div></div>
         <div class="card-back" v-if="card.flipped || card.matched">{{ card.emoji }}</div>
         <div class="check-sign" v-if="card.matched && card.isChecked">✔</div>
       </div>
@@ -121,7 +121,13 @@ export default {
     },
     restartGame() {
       this.cards = [];
-      this.timerStartStatus = 'reset'; // Reset timerStarted to false
+      this.flippedCards = [];
+      this.processingClick = false;
+      this.isGameOver = false;
+      this.isGameWon = false;
+      this.timerStartStatus = 'reset'; // Reset timerStarted to 'reset'
+      this.startTime=null;
+
       this.startGame(this.gridSize);
     },
   },
@@ -146,14 +152,14 @@ export default {
   transition: transform 0.5s;
 }
 
-.card .card-inner {
+.card .card-container {
   width: 100%;
   height: 100%;
   transition: transform 0.5s ease-in-out;
   transform-style: preserve-3d;
 }
 
-.card.flipped .card-inner {
+.card.flipped .card-container {
   transform: rotateY(180deg);
 }
 
@@ -164,8 +170,8 @@ export default {
 }
 
 
-.card .card-inner .card-front,
-.card .card-inner .card-back {
+.card .card-container .card-front,
+.card .card-container .card-back {
   width: 100%;
   height: 100%;
   border-radius: 10px;
@@ -178,12 +184,12 @@ export default {
   font-weight: bold;
 }
 
-.card .card-inner .card-front {
+.card .card-container .card-front {
   background-color: #007BFF;
   color: white;
 }
 
-.card .card-inner .card-back {
+.card .card-container .card-back {
   background-color: white;
   border: 3px solid #007BFF;
   color: #007BFF;
@@ -200,5 +206,10 @@ export default {
   font-size: 30px;
   color: #28a745;
   transform: rotateY(180deg);
+}
+
+.question-mark {
+  font-size: 30px;
+  color: white;
 }
 </style>

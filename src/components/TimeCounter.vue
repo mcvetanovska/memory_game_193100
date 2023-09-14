@@ -7,18 +7,19 @@
 <script>
 export default {
   props: {
-    startTime: Date, // Receive the start time as a prop
-    isGameStarted: Boolean, // Receive isGameStarted as a prop
-    isGameWon: Boolean, // Receive isGameWon as a prop
+    startTime: Date,
+    isGameStarted: Boolean,
+    isGameWon: Boolean,
   },
   data() {
     return {
       currentTime: new Date(),
+      timer: null,
     };
   },
   computed: {
     formattedTime() {
-      let elapsedTime = 0; // Default value for elapsedTime
+      let elapsedTime = 0;
 
       if (this.isGameStarted) {
         elapsedTime = this.currentTime - this.startTime;
@@ -46,30 +47,44 @@ export default {
     stopCounting() {
       clearInterval(this.timer);
       if (this.isGameWon) {
-        this.$emit('gameWon', this.formattedTime); // Emit the gameWon event with the playing time
+        this.$emit('gameWon', this.formattedTime);
       }
     },
   },
   watch: {
     isGameStarted: 'updateCurrentTime',
-    isGameWon: 'stopCounting', // Watch isGameWon to stop counting when the game is won
+    isGameWon: 'stopCounting',
+    startTime() {
+      // Reset the timer when startTime changes (game restart)
+      clearInterval(this.timer);
+      this.currentTime = new Date();
+      if (this.isGameStarted) {
+        this.timer = setInterval(() => {
+          this.updateCurrentTime();
+          if (this.isGameWon) {
+            clearInterval(this.timer);
+          }
+        }, 1000);
+      }
+    },
   },
   mounted() {
-    this.timer = setInterval(() => {
-      this.updateCurrentTime();
-      if (this.isGameWon) {
-        clearInterval(this.timer); // Stop the timer when the game is won
-      }
-    }, 1000);
+    // Start the timer on component mount if the game is already started
+    if (this.isGameStarted) {
+      this.timer = setInterval(() => {
+        this.updateCurrentTime();
+        if (this.isGameWon) {
+          clearInterval(this.timer);
+        }
+      }, 1000);
+    }
+  },
+  beforeUnmount() {
+    clearInterval(this.timer);
   },
 };
 </script>
 
 <style scoped>
-.time-counter {
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
+
 </style>

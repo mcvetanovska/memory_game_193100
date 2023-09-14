@@ -22,9 +22,9 @@ export default {
 
 <style scoped>
 .progress-bar {
-  width: 60%; /* Adjust the width as needed */
-  max-width: 400px; /* Adjust the maximum width as needed */
-  height: 20px; /* Adjust the height as needed */
+  width: 50%; /* Adjust the width as needed */
+  max-width: 300px; /* Adjust the maximum width as needed */
+  height: 15px; /* Adjust the height as needed */
   background-color: #ccc;
   border-radius: 5px;
   margin: 20px auto; /* Center the progress bar */

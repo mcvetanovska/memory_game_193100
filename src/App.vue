@@ -1,38 +1,41 @@
 <template>
   <div id="app">
-    <h1 class="app-title">Memory Game</h1>
-    <DifficultySelector @startGame="startGame"/>
-    <TimeCounter
+    <div class="content-container">
+    <div class="stats">
+      <DifficultySelector @startGame="startGame"/>
+      <TimeCounter
         :startTime="startTime"
         :isGameStarted="isGameStarted"
         :isGameWon="isGameWon"
     />
-    <div class="move-counter">
-      <p>Moves: {{ moveCount }}</p>
+      <div class="moves-count">
+        Moves: {{ moveCount }}
+      </div>
+      <button class="restart-button" @click="restartGame">Restart</button>
     </div>
     <ProgressBar
         :totalPairs="totalPairs"
         :matchedPairs="matchedPairs"
         :progress="progress"
     />
-    <button class="restart-button" @click="restartGame">Restart</button>
+
     <MemoryGame
         :gridSize="gridSize"
         :cards="cards"
         :isGameStarted="isGameStarted"
         :startTime="startTime"
         @GameOver="handleGameOver"
-        @cardClick="startTimer"
         @incrementMoveCount="incrementMoveCount"
         @pairMatched="incrementMatchedPairs"
     />
+
     <CongratulationsWindow
         :showModal="isGameWon"
         :moveCount="moveCount"
         :playingTime="playingTime"
         @restartGame="restartGame"
-
     />
+  </div>
   </div>
 </template>
 
@@ -69,26 +72,11 @@ export default {
       this.startTime = new Date();
       this.endTime = null;
       this.isGameStarted = true;
-      this.stopTimer();
       this.timer = setInterval(this.updatePlayingTime, 1000);
       this.moveCount = 0;
       this.matchedPairs = 0;
       this.totalPairs = this.gridSize * this.gridSize / 2;
-      this.isGameWon= false;
-      this.restartGame();
-    },
-    startTimer() {
-      if (!this.isGameStarted) {
-        this.startGame(this.gridSize);
-        this.isGameStarted = true; // Indicate that the game has started
-        this.startTime = new Date();
-      }
-    },
-    stopTimer() {
-      if(this.isGameWon) {
-        clearInterval(this.timer);
-        this.timer = null;
-      }
+      this.isGameWon = false;
     },
     handleCardClick() {
       // Handle card clicking logic, including starting the timer
@@ -169,15 +157,30 @@ export default {
       }
     },
     restartGame() {
+      console.log('Parent Component: restartGame method called');
       this.cards = [];
-      this.isGameStarted = false; // Stop the game
-      this.playingTime = 0;
+      this.isGameStarted = false;
       this.moveCount = 0;
       this.matchedPairs = 0;
-      this.startTime = null; // Reset start time
-      this.isGameWon = false; // Reset isGameWon
-      this.startGame(this.gridSize); // Start a new game
-    },
+      this.isGameWon = false;
+
+      // Clear the existing timer interval
+      if (this.timer) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
+
+      // Reset the startTime to null
+      this.startTime = null; // Add this line to reset the timer
+
+      this.playingTime = 0;
+
+      this.startGame(this.gridSize);
+
+      console.log('Parent Component: startTime', this.startTime);
+      console.log('Parent Component: playingTime', this.playingTime);
+    }
+
   },
   mounted() {
     this.startGame(this.gridSize);
@@ -194,60 +197,52 @@ export default {
 
 <style>
 /* Reset some default styles */
-body,
-ul {
+body {
   margin: 0;
   padding: 0;
-  list-style: none;
-  font-family: Arial, sans-serif;
+  font-family: 'Trebuchet MS', sans-serif;
 }
 
 #app {
-  text-align: center;
-  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Ensure the container takes at least the full viewport height */
+  background-color: #007BFF; /* Set the background color for the entire page */
 }
 
-.app-title {
-  font-size: 36px;
-  margin-bottom: 20px;
-  color: #007BFF;
-  text-transform: uppercase;
+.content-container {
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 0.9em 2.8em rgba(86, 66, 0, 0.2);
+  padding: 30px;
+  width: fit-content;
+  text-align: center;
+  margin-top:50px;
+  margin-bottom: 50px;
+}
+
+.stats {
+  text-align: right;
+  margin: 10px;
+}
+
+.stats select,
+.stats .moves-count {
+  margin-top: 10px; /* Add margin to create space between elements */
+  margin-bottom: 10px;
 }
 
 .restart-button {
-  padding: 10px 20px;
+  padding: 10px 15px;
   background-color: #007BFF;
   color: white;
   border: none;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   border-radius: 5px;
   transition: background-color 0.3s ease-in-out;
-}
-
-.restart-button:hover {
-  background-color: #45a049;
-}
-
-.move-counter {
-  margin-top: 20px;
-}
-
-
-button {
-  padding: 10px 20px;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 5px;
-}
-
-button:hover {
-  background-color: #45a049;
 }
 </style>
 
