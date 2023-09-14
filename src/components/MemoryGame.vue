@@ -6,7 +6,11 @@
         :key="card.id"
         @click="handleCardClick(card)"
         :class="{ 'card': true, 'flipped': card.flipped, 'matched': card.matched }">
-      <span v-if="card.flipped || card.matched">{{ card.emoji }}</span>
+      <div class="card-inner">
+        <div class="card-front"></div>
+        <div class="card-back" v-if="card.flipped || card.matched">{{ card.emoji }}</div>
+        <div class="check-sign" v-if="card.matched && card.isChecked">✔</div>
+      </div>
     </div>
   </div>
 </template>
@@ -23,8 +27,8 @@ export default {
   computed: {
     gridStyle() {
       // Calculate the grid columns based on gridSize
-      const cardSize = '150px'; // Adjust card size as needed
-      const gap = '20px'; // Adjust gap as needed
+      const cardSize = '100px'; // Adjust card size as needed
+      const gap = '15px'; // Adjust gap as needed
       const gridColumns = `repeat(${this.gridSize}, ${cardSize})`;
 
       return {
@@ -39,6 +43,7 @@ export default {
       timerStartStatus: 'stop',
       processingClick: false, // Add a flag to track click processing
       isGameOver: false,
+      isGameWon:false,
       };
   },
   methods: {
@@ -63,9 +68,10 @@ export default {
         this.$emit('cardClick');
       }
 
-      if (this.areAllCardsMatched()) {
+      if (this.areAllCardsMatched() && !this.isGameWon) {
         this.endTime = new Date();
         this.handleGameOver();
+        this.isGameWon = true; // Set gameWon to true to prevent further checks
       }
     },
 
@@ -77,28 +83,41 @@ export default {
       ) {
         this.flippedCards[0].matched = true;
         this.flippedCards[1].matched = true;
+        this.flippedCards[0].isChecked = true; // Set isChecked to true for matched cards
+        this.flippedCards[1].isChecked = true;
+        console.log('Pair matched!');
         // Emit an event to notify the parent component that a pair is matched
         this.$emit('pairMatched');
+
+        // Add this console.log to check the value of isGameWon
+        console.log('Game won:', this.isGameWon);
       } else {
         this.flippedCards.forEach((card) => (card.flipped = false));
       }
 
       this.flippedCards = [];
       this.processingClick = false; // Unlock clicks after processing
+
+      // Add this console.log to check the status of all cards
+      console.log('All cards:', this.cards);
     },
     handleGameOver() {
-      console.log('Checking if all cards are matched...');
-      // Check if all cards are matched
-      if (this.areAllCardsMatched()) {
-        this.endTime = new Date(); // Record the end time
-        this.isGameOver = true;
-        console.log('handleGameOver is called'); // Add this line
-        this.isGameWon = true; // Set isGameWon to true
-      }
+      // Delay the check to ensure the last pair of cards updates their 'matched' property
+      setTimeout(() => {
+        console.log('Checking if all cards are matched...');
+        if (this.areAllCardsMatched()) {
+          this.endTime = new Date(); // Record the end time
+          this.isGameOver = true;
+          console.log('Game won:', true);
+          this.isGameWon = true; // Set isGameWon to true
+        }
+      }, 200); // Adjust the delay as needed
     },
     areAllCardsMatched() {
-      // Check if all cards have been matched
-      return this.cards.every((card) => card.matched);
+      console.log('Checking if all cards are matched...');
+      const allMatched = this.cards.every((card) => card.matched);
+      console.log('All cards matched:', allMatched);
+      return allMatched;
     },
     restartGame() {
       this.cards = [];
@@ -114,28 +133,72 @@ export default {
   display: grid;
   margin: auto;
   justify-content: center;
+  perspective: 1000px;
 }
 
 .card {
-  width: 150px;
-  height: 150px;
-  background-color: #007BFF;
+  width: 100px;
+  height: 100px;
+  position: relative;
+  perspective: 1000px;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.5s;
+}
+
+.card .card-inner {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s ease-in-out;
+  transform-style: preserve-3d;
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-back {
+  border: 3px solid #007BFF;
+  border-radius: 10px;
+  transform: rotateY(180deg);
+}
+
+
+.card .card-inner .card-front,
+.card .card-inner .card-back {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  position: absolute;
+  backface-visibility: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
   font-size: 50px;
-  color: white;
   font-weight: bold;
-  border-radius: 5px;
-  transition: background-color 0.3s ease-in-out;
 }
 
-.card.flipped {
-  background-color: #17A2B8;
+.card .card-inner .card-front {
+  background-color: #007BFF;
+  color: white;
 }
 
-.card.matched {
-  background-color: #28A745;
+.card .card-inner .card-back {
+  background-color: white;
+  border: 3px solid #007BFF;
+  color: #007BFF;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.check-sign {
+  position: absolute;
+  bottom: 5px;
+  left: 10px;
+  font-size: 30px;
+  color: #28a745;
+  transform: rotateY(180deg);
 }
 </style>

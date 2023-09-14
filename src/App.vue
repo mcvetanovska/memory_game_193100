@@ -1,21 +1,21 @@
 <template>
   <div id="app">
-    <h1>Memory Game</h1>
+    <h1 class="app-title">Memory Game</h1>
     <DifficultySelector @startGame="startGame"/>
-    <TimeCounter :startTime="startTime" :isGameStarted="isGameStarted"/>
+    <TimeCounter
+        :startTime="startTime"
+        :isGameStarted="isGameStarted"
+        :isGameWon="isGameWon"
+    />
+    <div class="move-counter">
+      <p>Moves: {{ moveCount }}</p>
+    </div>
     <ProgressBar
         :totalPairs="totalPairs"
         :matchedPairs="matchedPairs"
         :progress="progress"
     />
-    <div class="move-counter">
-      <p>Moves: {{ moveCount }}</p>
-    </div>
-    <div >
-      <p>Total: {{ totalPairs }}</p>
-      <p>Matched: {{ matchedPairs }}</p>
-    </div>
-    <button @click="restartGame">Restart</button>
+    <button class="restart-button" @click="restartGame">Restart</button>
     <MemoryGame
         :gridSize="gridSize"
         :cards="cards"
@@ -31,6 +31,7 @@
         :moveCount="moveCount"
         :playingTime="playingTime"
         @restartGame="restartGame"
+
     />
   </div>
 </template>
@@ -68,10 +69,13 @@ export default {
       this.startTime = new Date();
       this.endTime = null;
       this.isGameStarted = true;
+      this.stopTimer();
       this.timer = setInterval(this.updatePlayingTime, 1000);
       this.moveCount = 0;
+      this.matchedPairs = 0;
       this.totalPairs = this.gridSize * this.gridSize / 2;
       this.isGameWon= false;
+      this.restartGame();
     },
     startTimer() {
       if (!this.isGameStarted) {
@@ -80,10 +84,12 @@ export default {
         this.startTime = new Date();
       }
     },
-    // stopTimer() {
-    //   clearInterval(this.timer);
-    //   this.timer = null;
-    // },
+    stopTimer() {
+      if(this.isGameWon) {
+        clearInterval(this.timer);
+        this.timer = null;
+      }
+    },
     handleCardClick() {
       // Handle card clicking logic, including starting the timer
       if (!this.isGameStarted) {
@@ -102,6 +108,12 @@ export default {
     incrementMatchedPairs() {
       this.matchedPairs += 1;
       this.updateProgress(); // Call the method to update the progress
+
+      if (this.matchedPairs === this.totalPairs && !this.isGameWon) {
+        this.endTime = new Date();
+        this.handleGameOver();
+        this.isGameWon = true; // Set isGameWon to true to prevent further checks
+      }
     },
     updateProgress() { // Implement this method to calculate progress
       if (this.totalPairs === 0) {
@@ -111,12 +123,14 @@ export default {
       }
     },
     areAllCardsMatched() {
-      // Check if all cards have been matched
-      return this.cards.every((card) => card.matched);
+      console.log('Checking if all cards are matched...');
+      const allMatched = this.cards.every((card) => card.matched);
+      console.log('All cards matched:', allMatched);
+      return allMatched;
     },
     updatePlayingTime() {
-      if (this.startTime && !this.isGameOver) {
-        const currentTime = new Date();
+      if (this.startTime) {
+        const currentTime = this.isGameOver ? this.endTime : new Date();
         this.playingTime = Math.floor((currentTime - this.startTime) / 1000);
       } else {
         this.playingTime = 0; // Set to 00:00 when not playing
@@ -132,8 +146,8 @@ export default {
 
       for (let i = 0; i < gridSize * gridSize / 2; i++) {
         const emoji = shuffledEmojis[i];
-        cards.push({id: i * 2, emoji, flipped: false, matched: false});
-        cards.push({id: i * 2 + 1, emoji, flipped: false, matched: false});
+        cards.push({id: i * 2, emoji, flipped: false, matched: false, isChecked: false});
+        cards.push({id: i * 2 + 1, emoji, flipped: false, matched: false, isChecked: false});
       }
 
       // Shuffle the cards
@@ -151,6 +165,7 @@ export default {
         this.isGameOver = true;
         console.log('handleGameOver is called'); // Add this line
         this.isGameWon = true; // Set isGameWon to true
+
       }
     },
     restartGame() {
@@ -158,6 +173,7 @@ export default {
       this.isGameStarted = false; // Stop the game
       this.playingTime = 0;
       this.moveCount = 0;
+      this.matchedPairs = 0;
       this.startTime = null; // Reset start time
       this.isGameWon = false; // Reset isGameWon
       this.startGame(this.gridSize); // Start a new game
@@ -178,7 +194,8 @@ export default {
 
 <style>
 /* Reset some default styles */
-body, ul {
+body,
+ul {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -190,11 +207,33 @@ body, ul {
   margin-top: 20px;
 }
 
-h1 {
-  font-size: 24px;
+.app-title {
+  font-size: 36px;
   margin-bottom: 20px;
-  color: #333;
+  color: #007BFF;
+  text-transform: uppercase;
 }
+
+.restart-button {
+  padding: 10px 20px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 5px;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.restart-button:hover {
+  background-color: #45a049;
+}
+
+.move-counter {
+  margin-top: 20px;
+}
+
 
 button {
   padding: 10px 20px;

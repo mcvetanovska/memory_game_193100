@@ -3,9 +3,8 @@
     <div class="modal">
       <h2>Congratulations!</h2>
       <p>You've won the game!</p>
-      <p>Stats:</p>
       <p>Moves: {{ moveCount }}</p>
-      <p>Time: {{ formatTime(playingTime) }} seconds</p>
+      <p>Time: {{ formatTime(playingTime-1) }} seconds</p>
       <button @click="restartGame">Play Again</button>
     </div>
   </div>
@@ -31,6 +30,10 @@ export default {
       return `${formattedMinutes}:${formattedSeconds}`;
     },
   },
+  mounted() {
+    console.log('CongratulationsWindow mounted with showModal:', this.showModal);
+    console.log('isGameWon:', this.isGameWon);
+  }
 };
 </script>
 

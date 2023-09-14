@@ -1,6 +1,6 @@
 <template>
   <div class="time-counter">
-    <p>Time: {{ formattedTime }}</p>
+    <div>Time: {{ formattedTime }}</div>
   </div>
 </template>
 
@@ -9,6 +9,7 @@ export default {
   props: {
     startTime: Date, // Receive the start time as a prop
     isGameStarted: Boolean, // Receive isGameStarted as a prop
+    isGameWon: Boolean, // Receive isGameWon as a prop
   },
   data() {
     return {
@@ -17,11 +18,12 @@ export default {
   },
   computed: {
     formattedTime() {
-      if (!this.startTime) return '00:00';
+      let elapsedTime = 0; // Default value for elapsedTime
 
-      const elapsedTime = this.isGameStarted
-          ? this.currentTime - this.startTime
-          : 0;
+      if (this.isGameStarted) {
+        elapsedTime = this.currentTime - this.startTime;
+      }
+
       const minutes = Math.floor(elapsedTime / 60000);
       const seconds = Math.floor((elapsedTime % 60000) / 1000);
 
@@ -41,12 +43,24 @@ export default {
         this.currentTime = new Date();
       }
     },
+    stopCounting() {
+      clearInterval(this.timer);
+      if (this.isGameWon) {
+        this.$emit('gameWon', this.formattedTime); // Emit the gameWon event with the playing time
+      }
+    },
   },
   watch: {
     isGameStarted: 'updateCurrentTime',
+    isGameWon: 'stopCounting', // Watch isGameWon to stop counting when the game is won
   },
   mounted() {
-    setInterval(this.updateCurrentTime, 1000);
+    this.timer = setInterval(() => {
+      this.updateCurrentTime();
+      if (this.isGameWon) {
+        clearInterval(this.timer); // Stop the timer when the game is won
+      }
+    }, 1000);
   },
 };
 </script>
