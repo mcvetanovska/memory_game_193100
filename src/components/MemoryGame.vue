@@ -21,14 +21,14 @@ export default {
   props: {
     gridSize: Number,
     cards: Array,
-    isGameStarted: Boolean, // Receive isGameStarted as a prop
-    startTime: Date, // Receive startTime as a prop
+    isGameStarted: Boolean,
+    startTime: Date,
   },
   computed: {
     gridStyle() {
       // Calculate the grid columns based on gridSize
-      const cardSize = '100px'; // Adjust card size as needed
-      const gap = '15px'; // Adjust gap as needed
+      const cardSize = '100px';
+      const gap = '15px';
       const gridColumns = `repeat(${this.gridSize}, ${cardSize})`;
 
       return {
@@ -41,7 +41,7 @@ export default {
     return {
       flippedCards: [],
       timerStartStatus: 'stop',
-      processingClick: false, // Add a flag to track click processing
+      processingClick: false,
       isGameOver: false,
       isGameWon:false,
       };
@@ -89,7 +89,6 @@ export default {
         // Emit an event to notify the parent component that a pair is matched
         this.$emit('pairMatched');
 
-        // Add this console.log to check the value of isGameWon
         console.log('Game won:', this.isGameWon);
       } else {
         this.flippedCards.forEach((card) => (card.flipped = false));
@@ -98,20 +97,18 @@ export default {
       this.flippedCards = [];
       this.processingClick = false; // Unlock clicks after processing
 
-      // Add this console.log to check the status of all cards
-      console.log('All cards:', this.cards);
     },
     handleGameOver() {
       // Delay the check to ensure the last pair of cards updates their 'matched' property
       setTimeout(() => {
         console.log('Checking if all cards are matched...');
         if (this.areAllCardsMatched()) {
-          this.endTime = new Date(); // Record the end time
+          this.endTime = new Date();
           this.isGameOver = true;
           console.log('Game won:', true);
-          this.isGameWon = true; // Set isGameWon to true
+          this.isGameWon = true;
         }
-      }, 200); // Adjust the delay as needed
+      }, 200);
     },
     areAllCardsMatched() {
       console.log('Checking if all cards are matched...');
@@ -125,7 +122,7 @@ export default {
       this.processingClick = false;
       this.isGameOver = false;
       this.isGameWon = false;
-      this.timerStartStatus = 'reset'; // Reset timerStarted to 'reset'
+      this.timerStartStatus = 'reset';
       this.startTime=null;
 
       this.startGame(this.gridSize);

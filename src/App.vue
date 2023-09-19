@@ -58,9 +58,9 @@ export default {
       moveCount: 0,
       timer: null,
       playingTime: 0,
-      totalPairs: 0, // Initialize totalPairs
-      matchedPairs: 0, // Initialize matchedPairs
-      isGameWon: false, // Add a data property to track game win
+      totalPairs: 0,
+      matchedPairs: 0,
+      isGameWon: false,
       progress: 0,
     };
   },
@@ -103,7 +103,7 @@ export default {
         this.isGameWon = true; // Set isGameWon to true to prevent further checks
       }
     },
-    updateProgress() { // Implement this method to calculate progress
+    updateProgress() {
       if (this.totalPairs === 0) {
         this.progress = 0;
       } else {
@@ -149,10 +149,10 @@ export default {
     handleGameOver() {
       // Check if all cards are matched
       if (this.areAllCardsMatched()) {
-        this.endTime = new Date(); // Record the end time
+        this.endTime = new Date();
         this.isGameOver = true;
-        console.log('handleGameOver is called'); // Add this line
-        this.isGameWon = true; // Set isGameWon to true
+        console.log('handleGameOver is called');
+        this.isGameWon = true;
 
       }
     },
@@ -171,7 +171,7 @@ export default {
       }
 
       // Reset the startTime to null
-      this.startTime = null; // Add this line to reset the timer
+      this.startTime = null;
 
       this.playingTime = 0;
 
@@ -207,8 +207,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* Ensure the container takes at least the full viewport height */
-  background-color: #007BFF; /* Set the background color for the entire page */
+  min-height: 100vh;
+  background-color: #007BFF;
 }
 
 .content-container {
@@ -229,7 +229,7 @@ body {
 
 .stats select,
 .stats .moves-count {
-  margin-top: 10px; /* Add margin to create space between elements */
+  margin-top: 10px;
   margin-bottom: 10px;
 }
 

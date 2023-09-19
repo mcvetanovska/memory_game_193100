@@ -22,18 +22,18 @@ export default {
 
 <style scoped>
 .progress-bar {
-  width: 50%; /* Adjust the width as needed */
-  max-width: 300px; /* Adjust the maximum width as needed */
-  height: 15px; /* Adjust the height as needed */
+  width: 50%;
+  max-width: 300px;
+  height: 15px;
   background-color: #ccc;
   border-radius: 5px;
-  margin: 20px auto; /* Center the progress bar */
+  margin: 20px auto;
   position: relative;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background-color: #007BFF; /* Progress bar fill color */
+  background-color: #007BFF;
   border-radius: 5px;
   transition: width 0.3s ease-in-out;
 }

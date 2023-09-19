@@ -20,7 +20,7 @@ export default {
   methods: {
     restartGame() {
       console.log('CongratulationsWindow: Emitting restartGame event');
-      this.$emit('restartGame'); // Emit the restartGame event to restart the game
+      this.$emit('restartGame');
     },
     formatTime(seconds) {
       // Implement a method to format seconds into a time string (e.g., "00:00")
